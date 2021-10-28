@@ -10,10 +10,20 @@ api_key = os.environ['BINANCE_API']
 api_secret = os.environ['BINANCE_SECRET']
 client = Client(api_key, api_secret)
 
-print(f"Free ETH balance:{client.get_asset_balance(asset='ETH')['free']} ETH")
-print(f"Free TRY balance: {client.get_asset_balance(asset='TRY')['free']} TRY")
 
-gridbot = Gridbot(client, 'ETHTRY', 120, 30500, 40500, 8)
+
+base_currency = input('Choose your base currency: ')
+quote_currency = input('Choose your quote currency: ')
+pair = base_currency + quote_currency
+print(f"The current price of the pair is {client.get_symbol_ticker(symbol=pair)['price']}")
+print(f"Free {base_currency} balance:{client.get_asset_balance(asset=base_currency)['free']} {base_currency}")
+print(f"Free {quote_currency} balance: {client.get_asset_balance(asset=quote_currency)['free']} {quote_currency}")
+total_amount_quote_currency = input('Amount of quote currency you want to invest: ')
+lower_boundary = input('Lower end of the range: ')
+upper_boundary = input('Upper end of the range: ')
+grid_number = input('Number of lines in the grid: ')
+
+gridbot = Gridbot(client, pair, total_amount_quote_currency, lower_boundary, upper_boundary, grid_number)
 if hasattr(gridbot, 'sufficient_balance'):
     gridbot.create_order_grid(client)
 else:
