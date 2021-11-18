@@ -23,12 +23,18 @@ class Gridbot:
             self.grid_number = int(grid_number)
 
     def create_order_grid(self, client):
+        amount_in_buy_orders = 0
+        amount_in_sell_orders = 0
         for i in range(math.ceil(-self.grid_number/2), math.ceil(self.grid_number/2) + 1):
             base_interval = (self.range_end - self.range_start)/self.grid_number if self.grid_number%2 == 0 else (self.range_end - self.range_start)/(self.grid_number + 1)
             if i < 0:
-                create_limit_order(client, self.pair, 'BUY', (1/(round(self.grid_number/2)))*(self.amount_quote_currency/self.initial_pair_price)/2, round(self.initial_pair_price + i*base_interval, 2))
+                create_limit_order(client, self.pair, 'BUY', (1/(round(self.grid_number/2)))*(self.amount_quote_currency/self.initial_pair_price), round(self.initial_pair_price + i*base_interval, 2))
                 print(f'BUY at {round(self.initial_pair_price + i*base_interval, 2)}')
+                amount_in_buy_orders += (1/(round(self.grid_number/2)))*(self.amount_quote_currency/self.initial_pair_price)
             elif i > 0:
-                create_limit_order(client, self.pair, 'SELL', (1/(round(self.grid_number/2)))*(self.amount_quote_currency/self.initial_pair_price)/2, round(self.initial_pair_price + i*base_interval, 2))
+                create_limit_order(client, self.pair, 'SELL', (1/(round(self.grid_number/2)))*(self.amount_quote_currency/self.initial_pair_price), round(self.initial_pair_price + i*base_interval, 2))
                 print(f'SELL at {round(self.initial_pair_price + i*base_interval, 2)}')
+                amount_in_sell_orders += (1/(round(self.grid_number/2)))*(self.amount_quote_currency/self.initial_pair_price)
+        print(f"You have an amount of {amount_in_buy_orders * self.initial_pair_price} {self.pair[3:]} in buy orders")
+        print(f"You have an amount of {amount_in_sell_orders * self.initial_pair_price} {self.pair[3:]} in sell orders")
         print('Your bot has been launched')
