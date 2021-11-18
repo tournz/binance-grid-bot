@@ -10,15 +10,15 @@ api_key = os.environ['BINANCE_API']
 api_secret = os.environ['BINANCE_SECRET']
 client = Client(api_key, api_secret)
 
-
-
 base_currency = input('Choose your base currency: ')
 quote_currency = input('Choose your quote currency: ')
 pair = base_currency + quote_currency
+initial_pair_price = client.get_symbol_ticker(symbol=pair)['price']
 print(f"The current price of the pair is {client.get_symbol_ticker(symbol=pair)['price']}")
-print(f"Free {base_currency} balance:{client.get_asset_balance(asset=base_currency)['free']} {base_currency}")
+print(f"Free {base_currency} balance:{client.get_asset_balance(asset=base_currency)['free']} {base_currency} equalling {float(client.get_asset_balance(asset=base_currency)['free']) * float(initial_pair_price)} {quote_currency}")
 print(f"Free {quote_currency} balance: {client.get_asset_balance(asset=quote_currency)['free']} {quote_currency}")
-total_amount_quote_currency = input('Amount of quote currency you want to invest: ')
+max_quote_currency_amount = min(float(client.get_asset_balance(asset=base_currency)['free']) * float(initial_pair_price), float(client.get_asset_balance(asset=quote_currency)['free']))
+total_amount_quote_currency = input(f'Amount of quote currency you want to invest on each side (max amount: {max_quote_currency_amount} {quote_currency}): ')
 lower_boundary = input('Lower end of the range: ')
 upper_boundary = input('Upper end of the range: ')
 grid_number = input('Number of lines in the grid: ')
