@@ -1,4 +1,4 @@
-import os, time, pandas as pd
+import os, time, pickle, pandas as pd
 from binance.client import Client
 from websocket import run_price_websocket
 from buy_sell_order import create_limit_order
@@ -26,6 +26,10 @@ grid_number = input('Number of lines in the grid: ')
 gridbot = Gridbot(client, pair, total_amount_quote_currency, lower_boundary, upper_boundary, grid_number)
 if hasattr(gridbot, 'sufficient_balance'):
     gridbot.create_order_grid(client)
+    # Storage path
+    BOT_STORAGE = f'/Users/zacharietournant/Desktop/Coding/Binance Bot/{gridbot.pair}_gridbot.dat'
+    with open(BOT_STORAGE, 'wb') as f:
+        pickle.dump(gridbot, f)
 else:
     print('Try and rebalance your account to be able to launch the bot')
 
