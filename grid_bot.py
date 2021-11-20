@@ -5,13 +5,13 @@ class Gridbot:
     def __init__(self, client, pair, amount_quote_currency, range_start, range_end, grid_number):
         pair_price = client.get_symbol_ticker(symbol=pair)['price']
         if float(pair_price) < float(range_start) or float(range_end) < float(pair_price) or float(range_start) > float(range_end):
-            print('Check your range values')
+            return print('Check your range values')
 
         if float(client.get_asset_balance(asset=pair[:3])['free']) < (float(amount_quote_currency)/float(pair_price)):
-            print(f"Base currency balance insufficient, you have the equivalent of {float(client.get_asset_balance(asset=pair[:3])['free'])*float(pair_price)} {pair[3:]} in {pair[:3]} and you need {float(amount_quote_currency)} {pair[3:]}")
+            return print(f"Base currency balance insufficient, you have the equivalent of {float(client.get_asset_balance(asset=pair[:3])['free'])*float(pair_price)} {pair[3:]} in {pair[:3]} and you need {float(amount_quote_currency)} {pair[3:]}")
 
         elif float(client.get_asset_balance(asset=pair[3:])['free']) < float(amount_quote_currency):
-            print(f"Quote currency balance insufficient, you have {client.get_asset_balance(asset=pair[3:])['free']} {pair[3:]} and you need {float(amount_quote_currency)} {pair[3:]}")
+            return print(f"Quote currency balance insufficient, you have {client.get_asset_balance(asset=pair[3:])['free']} {pair[3:]} and you need {float(amount_quote_currency)} {pair[3:]}")
 
         else:
             self.sufficient_balance = True
@@ -43,8 +43,8 @@ class Gridbot:
         self.grid_orders = client.get_open_orders(symbol=self.pair)
         self.grid_buy_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'BUY']
         self.grid_sell_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'SELL']
-        self.buy_prices = sorted([float(buy_order['price']) for buy_order in self.grid_buy_orders])
-        self.sell_prices = sorted([float(sell_order['price']) for sell_order in self.grid_sell_orders])
+        self.buy_prices = sorted([float(buy_order['price']) for buy_order in self.grid_buy_orders], reverse=True)
+        self.sell_prices = sorted([float(sell_order['price']) for sell_order in self.grid_sell_orders], reverse=True)
 
     def replace_order(self, client, replaced_order):
         if replaced_order['side'] == 'SELL':
