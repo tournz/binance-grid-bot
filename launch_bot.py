@@ -61,7 +61,7 @@ grid_number = input('Number of lines in the grid: ')
 gridbot = Gridbot(client, pair, total_amount_quote_currency, lower_boundary, upper_boundary, grid_number)
 if hasattr(gridbot, 'sufficient_balance'):
     gridbot.create_order_grid(client)
-    BOT_STORAGE = f'./{gridbot.pair}_gridbot.dat'
+    BOT_STORAGE = f'/Users/zacharietournant/Desktop/Coding/Binance Bot/{pair}_gridbot.dat'
     with open(BOT_STORAGE, 'wb') as f:
         pickle.dump(gridbot, f)
 else:
