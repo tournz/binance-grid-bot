@@ -4,6 +4,7 @@ from websocket import run_price_websocket
 from buy_sell_order import create_limit_order
 from get_latest_data import get_all_trade_data
 from grid_bot import Gridbot
+from crontab import CronTab
 
 # init
 api_key = os.environ['BINANCE_API']
@@ -60,7 +61,7 @@ grid_number = input('Number of lines in the grid: ')
 gridbot = Gridbot(client, pair, total_amount_quote_currency, lower_boundary, upper_boundary, grid_number)
 if hasattr(gridbot, 'sufficient_balance'):
     gridbot.create_order_grid(client)
-    BOT_STORAGE = f'/Users/zacharietournant/Desktop/Coding/Binance Bot/{gridbot.pair}_gridbot.dat'
+    BOT_STORAGE = f'./{gridbot.pair}_gridbot.dat'
     with open(BOT_STORAGE, 'wb') as f:
         pickle.dump(gridbot, f)
 else:

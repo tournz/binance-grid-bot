@@ -21,7 +21,7 @@ class Gridbot:
             self.range_start = float(range_start)
             self.range_end = float(range_end)
             self.grid_number = int(grid_number)
-            self.base_interval = 0
+            self.base_interval = 0.0
             self.grid_orders = []
             self.grid_buy_orders = []
             self.grid_sell_orders = []
@@ -49,10 +49,8 @@ class Gridbot:
     def replace_order(self, client, replaced_order):
         if replaced_order['side'] == 'SELL':
             create_limit_order(client, replaced_order['symbol'], 'BUY', float(replaced_order['origQty']), round(float(replaced_order['price']) - self.base_interval))
-            print(f"BUY order placed at {float(replaced_order['price']) + self.base_interval}")
         elif replaced_order['side'] == 'BUY':
             create_limit_order(client, replaced_order['symbol'], 'SELL', float(replaced_order['origQty']), round(float(replaced_order['price']) + self.base_interval))
-            print(f"SELL order placed at {float(replaced_order['price']) + self.base_interval}")
 
     def calculate_total_orders_amount(self, client):
         self.detect_grid

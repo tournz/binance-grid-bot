@@ -28,7 +28,8 @@ newly_filled_orders = sorted(newly_filled_orders, key=lambda d: d['updateTime'])
 # Inform the user of the newly filled orders and replace them
 print(f'There are {len(newly_filled_orders)} newly filled orders:')
 for order in newly_filled_orders:
-    print(f"{order['side']} at {order['price']} at {order['updateTime']}")
+
+    print(f"{order['side']} at {order['price']} at {datetime.datetime.fromtimestamp(int(order['updateTime']/1000))}")
     gridbot.replace_order(client, order)
 
 # Show the user the new grid
