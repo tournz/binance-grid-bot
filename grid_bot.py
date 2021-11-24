@@ -22,6 +22,7 @@ class Gridbot:
             self.range_end = float(range_end)
             self.grid_number = int(grid_number)
             self.base_interval = 0.0
+            self.amount_per_order_base_currency = 0
             self.grid_orders = []
             self.grid_buy_orders = []
             self.grid_sell_orders = []
@@ -29,20 +30,33 @@ class Gridbot:
             self.sell_prices = []
 
     def create_order_grid(self, client):
-        for i in reversed(range(math.ceil(-self.grid_number/2), math.ceil(self.grid_number/2) + 1)):
-            self.base_interval = (self.range_end - self.range_start)/self.grid_number if self.grid_number%2 == 0 else (self.range_end - self.range_start)/(self.grid_number + 1)
+        self.pair_price = float(client.get_symbol_ticker(symbol=self.pair)['price'])
+        # The rounding to 0 decimals will need to be adjusted for other pairs
+        self.base_interval = round((self.range_end - self.range_start)/(self.grid_number - 1),0) if self.grid_number%2 == 0 else round((self.range_end - self.range_start)/(self.grid_number),0)
+        self.amount_per_order_base_currency = round((2/self.grid_number)*(self.amount_quote_currency/self.pair_price), 4)  # The rounding to 4 decimals will need to be adjusted for other pairs as well
+        # Readjust the grid's start and end
+        self.range_start = self.pair_price + round((math.ceil(-self.grid_number/2) + 0.5)*self.base_interval), 0) # Check how to round, how many decimals are needed
+        self.range_end = self.pair_price + round((math.ceil(self.grid_number/2) - 0.5)*self.base_interval, 0) # Check how to round, how many decimals are needed
+        # Send the grid orders
+        for i in reversed(range(math.ceil(-self.grid_number/2), math.ceil(self.grid_number/2))):
             if i < 0:
-                create_limit_order(client, self.pair, 'BUY', (1/(round(self.grid_number/2)))*(self.amount_quote_currency/self.pair_price), round(self.pair_price + i*self.base_interval))
-                print(f'BUY at {round(self.pair_price + i*self.base_interval, 2)}')
-            elif i > 0:
-                create_limit_order(client, self.pair, 'SELL', (1/(round(self.grid_number/2)))*(self.amount_quote_currency/self.pair_price), round(self.pair_price + i*self.base_interval))
-                print(f'SELL at {round(self.pair_price + i*self.base_interval, 2)}')
+                create_limit_order(client, self.pair, 'BUY', self.amount_per_order_base_currency, self.pair_price + round((i+0.5)*self.base_interval,0)) # Check rounding too
+                print(f'BUY at {self.pair_price + round((i+0.5)*self.base_interval,0)}')
+            elif i >= 0:
+                create_limit_order(client, self.pair, 'SELL', self.amount_per_order_base_currency, self.pair_price + round((i+0.5)*self.base_interval,0)) # Check rounding too
+                print(f'SELL at {self.pair_price + round((i+0.5)*self.base_interval,0)}')
         print('Your bot has been launched')
 
     def detect_grid(self, client):
         self.grid_orders = client.get_open_orders(symbol=self.pair)
-        self.grid_buy_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'BUY']
-        self.grid_sell_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'SELL']
+        for order in self.grid_orders:
+            print(order['price'])
+            print(self.range_start)
+            print(order['price'] - self.range_start)
+            print(self.base_interval)
+            print((order['price'] -self.range_start)%self.base_interval)
+        self.grid_buy_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'BUY' and (float(one_order['price']) - self.range_start)%self.base_interval == 0]
+        self.grid_sell_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'SELL' and (self.range_end - float(one_order['price']))%self.base_interval == 0]
         self.buy_prices = sorted([float(buy_order['price']) for buy_order in self.grid_buy_orders], reverse=True)
         self.sell_prices = sorted([float(sell_order['price']) for sell_order in self.grid_sell_orders], reverse=True)
 
