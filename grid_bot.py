@@ -51,7 +51,6 @@ class Gridbot:
         print('Your bot has been launched')
 
     def detect_grid(self, client):
-        print(f'This is the initial price: {self.initial_pair_price}')
         self.grid_orders = client.get_open_orders(symbol=self.pair)
         # For testing purposes
         '''for order in self.grid_orders:
