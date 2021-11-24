@@ -37,7 +37,7 @@ if base_currency_balance_in_quote_amount < 0.95 * quote_currency_balance or base
             client.order_market_buy(symbol=pair, quantity=quantity)
         elif base_currency_balance_in_quote_amount > quote_currency_balance:
             client.order_market_sell(symbol=pair, quantity=quantity)
-        time.sleep(3)
+        time.sleep(1)
 
         # Get the updated price and balance info from the client
         pair_price = float(client.get_symbol_ticker(symbol=pair)['price'])
@@ -64,13 +64,12 @@ if hasattr(gridbot, 'sufficient_balance'):
     # Store the gridbot object
     os.makedirs(f'/root/code/binance_bot/gridbots/{pair}', exist_ok=True)
     start_timestamp = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-    step = ((float(upper_boundary) - float(lower_boundary))/int(grid_number)) if int(grid_number)%2 == 0 else ((float(upper_boundary) - float(lower_boundary))/int(grid_number) -1)
-    BOT_STORAGE = f"/root/code/binance_bot/gridbots/{pair}/ACTIVE [{lower_boundary}, {upper_boundary}] step {step} Start:{start_timestamp} gridbot.dat"
+    BOT_STORAGE = f"/root/code/binance_bot/gridbots/{pair}/ACTIVE [{gridbot.range_start}, {gridbot.range_end}] step {gridbot.base_interval} amount_per_order {gridbot.amount_per_order_base_currency} Start:{start_timestamp} gridbot.dat"
     f= open(BOT_STORAGE, 'wb')
     pickle.dump(gridbot, f)
     f.close()
     # Create a log file
-    LOG_STORAGE = f"/root/code/binance_bot/gridbots/{pair}/ACTIVE [{lower_boundary}, {upper_boundary}] step {step} Start:{start_timestamp} logs.txt"
+    LOG_STORAGE = f"/root/code/binance_bot/gridbots/{pair}/ACTIVE [{gridbot.range_start}, {gridbot.range_end}] step {gridbot.base_interval} amount_per_order {gridbot.amount_per_order_base_currency} Start:{start_timestamp} logs.txt"
     f=open(LOG_STORAGE, 'w')
     f.close()
 
