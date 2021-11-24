@@ -29,7 +29,7 @@ class Gridbot:
             self.sell_prices = []
 
     def create_order_grid(self, client):
-        for i in range(math.ceil(-self.grid_number/2), math.ceil(self.grid_number/2) + 1):
+        for i in reversed(range(math.ceil(-self.grid_number/2), math.ceil(self.grid_number/2) + 1)):
             self.base_interval = (self.range_end - self.range_start)/self.grid_number if self.grid_number%2 == 0 else (self.range_end - self.range_start)/(self.grid_number + 1)
             if i < 0:
                 create_limit_order(client, self.pair, 'BUY', (1/(round(self.grid_number/2)))*(self.amount_quote_currency/self.pair_price), round(self.pair_price + i*self.base_interval))

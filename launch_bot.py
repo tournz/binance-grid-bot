@@ -1,4 +1,4 @@
-import os, time, pickle, pandas as pd
+import os, time, datetime, pickle, pandas as pd
 from binance.client import Client
 from websocket import run_price_websocket
 from buy_sell_order import create_limit_order
@@ -57,15 +57,33 @@ lower_boundary = input('Lower end of the range: ')
 upper_boundary = input('Upper end of the range: ')
 grid_number = input('Number of lines in the grid: ')
 
-# Create the bot object, launch it and store its info
+# Create the bot object
 gridbot = Gridbot(client, pair, total_amount_quote_currency, lower_boundary, upper_boundary, grid_number)
 if hasattr(gridbot, 'sufficient_balance'):
     gridbot.create_order_grid(client)
-    BOT_STORAGE = f'/Users/zacharietournant/Desktop/Coding/Binance Bot/{pair}_gridbot.dat'
-    with open(BOT_STORAGE, 'wb') as f:
-        pickle.dump(gridbot, f)
+    # Store the gridbot object
+    os.makedirs(f'/root/code/binance_bot/gridbots/{pair}', exist_ok=True)
+    start_timestamp = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    step = ((float(upper_boundary) - float(lower_boundary))/int(grid_number)) if int(grid_number)%2 == 0 else ((float(upper_boundary) - float(lower_boundary))/int(grid_number) -1)
+    BOT_STORAGE = f"/root/code/binance_bot/gridbots/{pair}/ACTIVE [{lower_boundary}, {upper_boundary}] step {step} Start:{start_timestamp} gridbot.dat"
+    f= open(BOT_STORAGE, 'wb')
+    pickle.dump(gridbot, f)
+    f.close()
+    # Create a log file
+    LOG_STORAGE = f"/root/code/binance_bot/gridbots/{pair}/ACTIVE [{lower_boundary}, {upper_boundary}] step {step} Start:{start_timestamp} logs.txt"
+    f=open(LOG_STORAGE, 'w')
+    f.close()
+
+    # Instruct the adjust_grid cron job to be executed every minute
+    cron = CronTab(user='root')
+    job = cron.new(command='python3 /root/code/binance_bot/adjust_grid.py', comment=f'{pair}')
+    job.minute.every(1)
+    cron.write()
+    print('The cron job has been launched')
+
 else:
     print('Try and rebalance your account to be able to launch the bot')
+
 
 
 
