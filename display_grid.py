@@ -15,10 +15,6 @@ active_gridbots = [bot_file for bot_file in os.listdir(f'/root/code/binance_bot/
 questions = [inquirer.List('bot', message = 'Which bot do you want to check?', choices = active_gridbots)]
 answers = inquirer.prompt(questions)
 BOT_STORAGE = f"/root/code/binance_bot/gridbots/{pair}/{answers['bot']}"
-lower_boundary = re.findall('\[(\d+.?\d*),', answers['bot'])[0]
-upper_boundary = re.findall(', (\d+.?\d*)\]', answers['bot'])[0]
-print(lower_boundary)
-print(upper_boundary)
 with open(BOT_STORAGE,'rb') as f:
     gridbot = pickle.load(f)
 
