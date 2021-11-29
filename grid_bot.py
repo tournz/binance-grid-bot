@@ -36,6 +36,9 @@ class Gridbot:
         self.initial_pair_price = float(client.get_symbol_ticker(symbol=self.pair)['price'])
         # The rounding to 0 decimals will need to be adjusted for other pairs
         self.base_interval = round((self.range_end - self.range_start)/(self.grid_number - 1),0) if self.grid_number%2 == 0 else round((self.range_end - self.range_start)/(self.grid_number),0)
+        # Make the base interval even to make sure half of it is still an integer
+        if self.base_interval%2 != 0:
+            self.base_interval += 1
         self.amount_per_order_base_currency = round((2/self.grid_number)*(self.amount_quote_currency/self.initial_pair_price), 4)  # The rounding to 4 decimals will need to be adjusted for other pairs as well
         # Readjust the grid's start and end
         self.range_start = self.initial_pair_price + round((math.ceil(-self.grid_number/2) + 0.5)*self.base_interval, 0) # Check how to round, how many decimals are needed
@@ -52,16 +55,6 @@ class Gridbot:
 
     def detect_grid(self, client):
         self.grid_orders = client.get_open_orders(symbol=self.pair)
-        # For testing purposes
-        '''for order in self.grid_orders:
-            if order['side'] == 'SELL':
-                print(float(order['price']) - round(0.5*self.base_interval, 0) - self.initial_pair_price)
-                print(self.base_interval)
-                print((float(order['price']) - round(0.5*self.base_interval, 0) - self.initial_pair_price)%self.base_interval)
-            if order['side'] == 'BUY':
-                print(self.initial_pair_price - round(0.5*self.base_interval, 0) - float(order['price']))
-                print(self.base_interval)
-                print((self.initial_pair_price - round(0.5*self.base_interval, 0) - float(order['price']))%self.base_interval)'''
         self.grid_sell_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'SELL' and (float(one_order['price']) - round(0.5*self.base_interval, 0) - self.initial_pair_price)%self.base_interval == 0]
         self.grid_buy_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'BUY' and (-round(0.5*self.base_interval, 0) + self.initial_pair_price - float(one_order['price']))%self.base_interval == 0]
         self.buy_prices = sorted([float(buy_order['price']) for buy_order in self.grid_buy_orders], reverse=True)
