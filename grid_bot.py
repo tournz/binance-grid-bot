@@ -62,9 +62,9 @@ class Gridbot:
 
     def replace_order(self, client, replaced_order):
         if replaced_order['side'] == 'SELL':
-            create_limit_order(client, replaced_order['symbol'], 'BUY', float(replaced_order['origQty']), round(float(replaced_order['price']) - self.base_interval))
+            create_limit_order(client, replaced_order['symbol'], 'BUY', float(replaced_order['origQty']), float(replaced_order['price']))
         elif replaced_order['side'] == 'BUY':
-            create_limit_order(client, replaced_order['symbol'], 'SELL', float(replaced_order['origQty']), round(float(replaced_order['price']) + self.base_interval))
+            create_limit_order(client, replaced_order['symbol'], 'SELL', float(replaced_order['origQty']), float(replaced_order['price']))
 
     def calculate_total_orders_amount(self, client):
         self.detect_grid

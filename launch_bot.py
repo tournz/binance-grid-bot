@@ -73,12 +73,13 @@ if hasattr(gridbot, 'sufficient_balance'):
     f=open(LOG_STORAGE, 'w')
     f.close()
 
-    # Instruct the adjust_grid cron job to be executed every minute
+    # No longer needed because the cron job will take care of all pairs at once
+    '''# Instruct the adjust_grid cron job to be executed every minute
     cron = CronTab(user='root')
     job = cron.new(command='python3 /root/code/binance_bot/adjust_grid.py', comment=f'{pair}')
     job.minute.every(1)
     cron.write()
-    print('The cron job has been launched')
+    print('The cron job has been launched')'''
 
 else:
     print('Try and rebalance your account to be able to launch the bot')

@@ -13,38 +13,46 @@ current_timestamp = 1000*time.time()
 current_timestamp_minus_1_minute = current_timestamp - 60000
 
 # Loop over the currency pairs
-exchange_info = client.get_exchange_info()
-for pair_dic in exchange_info['symbols']:
-    pair = pair_dic['symbol']
+# exchange_info = client.get_exchange_info()
+# for pair_dic in exchange_info['symbols']:
+for pair_dic in ['ETHTRY']:
+    # pair = pair_dic['symbol']
+    pair = pair_dic # to take out once I really loop
     print(pair)
-    FOLDER_PATH = f'/root/code/binance_bot/gridbots/{pair}/'
-
-    with open(BOT_FILE_PATH,'rb') as f:
-        gridbot = pickle.load(f)
+    # Get the active gridbots for the pair
+    FOLDER_PATH = f'/root/code/binance_bot/gridbots/{pair}'
+    active_gridbots_files = [bot_file for bot_file in os.listdir(FOLDER_PATH) if bot_file[:6]=='ACTIVE' and bot_file[-11:-4]=='gridbot']
+    print(active_gridbots_files)
 
     # Put the newly executed orders in a list
-    all_orders = client.get_all_orders(symbol=gridbot.pair)
+    all_orders = client.get_all_orders(symbol=pair)
     newly_filled_orders = [order for order in all_orders if order['status']=='FILLED' and order['updateTime'] > current_timestamp_minus_1_minute]
     newly_filled_orders = sorted(newly_filled_orders, key=lambda d: d['updateTime'])
 
-    # Loop over the executed orders
-    for order in newly_filled_orders:
-        # Identify which grid the executed order belonged to:
-        # Replace the newly executed order:
-        gridbot.replace_order(client, order)
+    # Loop over the active gridbots
+    for gridbot_file in active_gridbots_files:
+        gridbot_executed_orders = []
+        BOT_FILE_PATH = FOLDER_PATH + '/' + gridbot_file
+        with open(BOT_FILE_PATH, 'rb') as f:
+            gridbot = pickle.load(f)
+        gridbot.detect_grid(client)
+        # Replace the newly executed orders related to the gridbot
+        for order in newly_filled_orders:
+            if (order in gridbot.grid_buy_orders or gridbot.grid_sell_orders):
+                gridbot.replace_order(client, order)
+                gridbot_executed_orders.append(order)
 
-    # Log the operations into the log file
-    gridbot.detect_grid(client)
-
-    logfile = open('/root/code/binance_bot/logs.txt', 'a')
-    logfile.write('--------------------------------------\nAccessed on ' + str(datetime.datetime.now()) +'\n')
-    logfile.write(f'{len(newly_filled_orders)} orders were filled:\n')
-    for order in newly_filled_orders:
-        logfile.write(f"{order['side']} at {order['price']} was executed at {datetime.datetime.fromtimestamp(int(order['updateTime']/1000))}\n")
-    logfile.write('\nThe order grid is now as follows:\n')
-    for sell in gridbot.sell_prices:
-        logfile.write(f'SELL AT ----- {sell}\n')
-    logfile.write('CURRENT PRICE '+ client.get_symbol_ticker(symbol=gridbot.pair)['price'] +'\n')
-    for buy in gridbot.buy_prices:
-        logfile.write(f'BUY AT ------ {buy}\n')
-    logfile.close()
+        # Log the operations into the log file
+        gridbot.detect_grid(client)
+        logfile = open(FOLDER_PATH + '/' + gridbot_file[:-11] + 'logs.txt', 'a')
+        logfile.write('--------------------------------------\nAccessed on ' + str(datetime.datetime.now()) +'\n')
+        logfile.write(f'{len(gridbot_executed_orders)} orders were filled:\n')
+        for order in gridbot_executed_orders:
+            logfile.write(f"{order['side']} at {order['price']} was executed at {datetime.datetime.fromtimestamp(int(order['updateTime']/1000))}\n")
+        logfile.write('\nThe order grid is now as follows:\n')
+        for sell in gridbot.sell_prices:
+            logfile.write(f'SELL AT ----- {sell}\n')
+        logfile.write('CURRENT PRICE '+ client.get_symbol_ticker(symbol=gridbot.pair)['price'] +'\n')
+        for buy in gridbot.buy_prices:
+            logfile.write(f'BUY AT ------ {buy}\n')
+        logfile.close()
