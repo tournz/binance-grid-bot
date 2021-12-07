@@ -36,35 +36,34 @@ class Gridbot:
         self.initial_pair_price = float(client.get_symbol_ticker(symbol=self.pair)['price'])
         # The rounding to 0 decimals will need to be adjusted for other pairs
         self.base_interval = round((self.range_end - self.range_start)/(self.grid_number - 1),0) if self.grid_number%2 == 0 else round((self.range_end - self.range_start)/(self.grid_number),0)
-        # Make the base interval even to make sure half of it is still an integer
-        if self.base_interval%2 != 0:
-            self.base_interval += 1
-        self.amount_per_order_base_currency = round((2/self.grid_number)*(self.amount_quote_currency/self.initial_pair_price), 4)  # The rounding to 4 decimals will need to be adjusted for other pairs as well
+        self.amount_per_order_base_currency = round((2/self.grid_number)*(self.amount_quote_currency/self.initial_pair_price),4) # The rounding to 4 decimals will need to be adjusted for other pairs as well
         # Readjust the grid's start and end
-        self.range_start = self.initial_pair_price + round((math.ceil(-self.grid_number/2) + 0.5)*self.base_interval, 0) # Check how to round, how many decimals are needed
-        self.range_end = self.initial_pair_price + round((math.ceil(self.grid_number/2) - 0.5)*self.base_interval, 0) # Check how to round, how many decimals are needed
+        self.range_start = self.initial_pair_price + round((math.ceil(-self.grid_number/2))*self.base_interval, 0) # Check how to round, how many decimals are needed
+        self.range_end = self.initial_pair_price + round((math.ceil(self.grid_number/2))*self.base_interval, 0) # Check how to round, how many decimals are needed
         # Send the grid orders
-        for i in reversed(range(math.ceil(-self.grid_number/2), math.ceil(self.grid_number/2))):
+        for i in reversed(range(math.ceil(-self.grid_number/2), math.ceil(self.grid_number/2) + 1)):
             if i < 0:
-                create_limit_order(client, self.pair, 'BUY', self.amount_per_order_base_currency, self.initial_pair_price + round((i+0.5)*self.base_interval,0)) # Check rounding too
-                print(f'BUY at {self.initial_pair_price + round((i+0.5)*self.base_interval,0)}')
-            elif i >= 0:
-                create_limit_order(client, self.pair, 'SELL', self.amount_per_order_base_currency, self.initial_pair_price + round((i+0.5)*self.base_interval,0)) # Check rounding too
-                print(f'SELL at {self.initial_pair_price + round((i+0.5)*self.base_interval,0)}')
+                create_limit_order(client, self.pair, 'BUY', self.amount_per_order_base_currency, self.initial_pair_price + round(i*self.base_interval,0)) # Check rounding too
+                print(f'BUY at {self.initial_pair_price + round(i*self.base_interval,0)}')
+            elif i == 0:
+                print(f'PRICE---{self.initial_pair_price}')
+            elif i > 0:
+                create_limit_order(client, self.pair, 'SELL', self.amount_per_order_base_currency, self.initial_pair_price + round(i*self.base_interval,0)) # Check rounding too
+                print(f'SELL at {self.initial_pair_price + round(i*self.base_interval,0)}')
         print('Your bot has been launched')
 
     def detect_grid(self, client):
         self.grid_orders = client.get_open_orders(symbol=self.pair)
-        self.grid_sell_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'SELL' and (float(one_order['price']) - round(0.5*self.base_interval, 0) - self.initial_pair_price)%self.base_interval == 0]
-        self.grid_buy_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'BUY' and (-round(0.5*self.base_interval, 0) + self.initial_pair_price - float(one_order['price']))%self.base_interval == 0]
+        self.grid_sell_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'SELL' and (float(one_order['price']) - self.initial_pair_price)%self.base_interval == 0]
+        self.grid_buy_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'BUY' and (self.initial_pair_price - float(one_order['price']))%self.base_interval == 0]
         self.buy_prices = sorted([float(buy_order['price']) for buy_order in self.grid_buy_orders], reverse=True)
         self.sell_prices = sorted([float(sell_order['price']) for sell_order in self.grid_sell_orders], reverse=True)
 
     def replace_order(self, client, replaced_order):
         if replaced_order['side'] == 'SELL':
-            create_limit_order(client, replaced_order['symbol'], 'BUY', float(replaced_order['origQty']), float(replaced_order['price']))
+            create_limit_order(client, replaced_order['symbol'], 'BUY', float(replaced_order['origQty']), float(replaced_order['price']) - self.base_interval)
         elif replaced_order['side'] == 'BUY':
-            create_limit_order(client, replaced_order['symbol'], 'SELL', float(replaced_order['origQty']), float(replaced_order['price']))
+            create_limit_order(client, replaced_order['symbol'], 'SELL', float(replaced_order['origQty']), float(replaced_order['price']) + self.base_interval)
 
     def calculate_total_orders_amount(self, client):
         self.detect_grid

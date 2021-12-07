@@ -18,11 +18,10 @@ current_timestamp_minus_1_minute = current_timestamp - 60000
 for pair_dic in ['ETHTRY']:
     # pair = pair_dic['symbol']
     pair = pair_dic # to take out once I really loop
-    print(pair)
+
     # Get the active gridbots for the pair
     FOLDER_PATH = f'/root/code/binance_bot/gridbots/{pair}'
     active_gridbots_files = [bot_file for bot_file in os.listdir(FOLDER_PATH) if bot_file[:6]=='ACTIVE' and bot_file[-11:-4]=='gridbot']
-    print(active_gridbots_files)
 
     # Put the newly executed orders in a list
     all_orders = client.get_all_orders(symbol=pair)
@@ -35,6 +34,7 @@ for pair_dic in ['ETHTRY']:
         BOT_FILE_PATH = FOLDER_PATH + '/' + gridbot_file
         with open(BOT_FILE_PATH, 'rb') as f:
             gridbot = pickle.load(f)
+        # WIP WIP WIP WIP WIP
         gridbot.detect_grid(client)
         # Replace the newly executed orders related to the gridbot
         for order in newly_filled_orders:
@@ -43,7 +43,9 @@ for pair_dic in ['ETHTRY']:
                 gridbot_executed_orders.append(order)
 
         # Log the operations into the log file
+        # WIP WIP WIP WIP WIP
         gridbot.detect_grid(client)
+        current_price = client.get_symbol_ticker(symbol=gridbot.pair)['price']
         logfile = open(FOLDER_PATH + '/' + gridbot_file[:-11] + 'logs.txt', 'a')
         logfile.write('--------------------------------------\nAccessed on ' + str(datetime.datetime.now()) +'\n')
         logfile.write(f'{len(gridbot_executed_orders)} orders were filled:\n')
@@ -52,7 +54,7 @@ for pair_dic in ['ETHTRY']:
         logfile.write('\nThe order grid is now as follows:\n')
         for sell in gridbot.sell_prices:
             logfile.write(f'SELL AT ----- {sell}\n')
-        logfile.write('CURRENT PRICE '+ client.get_symbol_ticker(symbol=gridbot.pair)['price'] +'\n')
+        logfile.write('CURRENT PRICE '+ current_price +'\n')
         for buy in gridbot.buy_prices:
             logfile.write(f'BUY AT ------ {buy}\n')
         logfile.close()
