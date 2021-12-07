@@ -27,10 +27,11 @@ class Gridbot:
             self.base_interval = 0.0
             self.amount_per_order_base_currency = 0
             self.grid_orders = []
-            self.grid_buy_orders = []
-            self.grid_sell_orders = []
-            self.buy_prices = []
-            self.sell_prices = []
+            self.binance_grid_orders = []
+            self.binance_grid_buy_orders = []
+            self.binance_grid_sell_orders = []
+            self.binance_buy_prices = []
+            self.binance_sell_prices = []
 
     def create_order_grid(self, client):
         self.initial_pair_price = float(client.get_symbol_ticker(symbol=self.pair)['price'])
@@ -43,35 +44,27 @@ class Gridbot:
         # Send the grid orders
         for i in reversed(range(math.ceil(-self.grid_number/2), math.ceil(self.grid_number/2) + 1)):
             if i < 0:
-                create_limit_order(client, self.pair, 'BUY', self.amount_per_order_base_currency, self.initial_pair_price + round(i*self.base_interval,0)) # Check rounding too
+                self.grid_orders.append(create_limit_order(client, self.pair, 'BUY', self.amount_per_order_base_currency, self.initial_pair_price + round(i*self.base_interval,0))) # Check rounding too
                 print(f'BUY at {self.initial_pair_price + round(i*self.base_interval,0)}')
             elif i == 0:
                 print(f'PRICE---{self.initial_pair_price}')
             elif i > 0:
-                create_limit_order(client, self.pair, 'SELL', self.amount_per_order_base_currency, self.initial_pair_price + round(i*self.base_interval,0)) # Check rounding too
+                self.grid_orders.append(create_limit_order(client, self.pair, 'SELL', self.amount_per_order_base_currency, self.initial_pair_price + round(i*self.base_interval,0))) # Check rounding too
                 print(f'SELL at {self.initial_pair_price + round(i*self.base_interval,0)}')
         print('Your bot has been launched')
 
-    def detect_grid(self, client):
-        self.grid_orders = client.get_open_orders(symbol=self.pair)
-        self.grid_sell_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'SELL' and (float(one_order['price']) - self.initial_pair_price)%self.base_interval == 0]
-        self.grid_buy_orders = [one_order for one_order in self.grid_orders if one_order['side'] == 'BUY' and (self.initial_pair_price - float(one_order['price']))%self.base_interval == 0]
-        self.buy_prices = sorted([float(buy_order['price']) for buy_order in self.grid_buy_orders], reverse=True)
-        self.sell_prices = sorted([float(sell_order['price']) for sell_order in self.grid_sell_orders], reverse=True)
+    def detect_binance_grid(self, client):
+        self.binance_grid_orders = client.get_open_orders(symbol=self.pair)
+        gridbot_orders_ids = [order['orderId'] for order in self.grid_orders]
+        self.binance_grid_orders = [order for order in self.binance_grid_orders if order['orderId'] in gridbot_orders_ids]
+        self.binance_grid_sell_orders = [order for order in self.binance_grid_orders if order['side'] == 'SELL']
+        self.binance_grid_buy_orders = [order for order in self.binance_grid_orders if order['side'] == 'BUY']
+        self.binance_buy_prices = sorted([float(buy_order['price']) for buy_order in self.binance_grid_buy_orders], reverse=True)
+        self.binance_sell_prices = sorted([float(sell_order['price']) for sell_order in self.binance_grid_sell_orders], reverse=True)
 
     def replace_order(self, client, replaced_order):
+        self.grid_orders = [order for order in self.grid_orders if order != replaced_order]
         if replaced_order['side'] == 'SELL':
-            create_limit_order(client, replaced_order['symbol'], 'BUY', float(replaced_order['origQty']), float(replaced_order['price']) - self.base_interval)
+            self.grid_orders.append(create_limit_order(client, replaced_order['symbol'], 'BUY', float(replaced_order['origQty']), float(replaced_order['price']) - self.base_interval))
         elif replaced_order['side'] == 'BUY':
-            create_limit_order(client, replaced_order['symbol'], 'SELL', float(replaced_order['origQty']), float(replaced_order['price']) + self.base_interval)
-
-    def calculate_total_orders_amount(self, client):
-        self.detect_grid
-        self.pair_price = float(client.get_symbol_ticker(symbol=self.pair)['price'])
-        amount_in_buy_orders, amount_in_sell_orders = 0
-        for order in self.buy_orders:
-            amount_in_buy_orders += float(order['origQty'])*self.pair_price
-        for order in self.sell_orders:
-            amount_in_sell_orders += float(order['origQty'])*self.pair_price
-        print(f"You have an amount of {amount_in_buy_orders} {self.pair[3:]} in buy orders")
-        print(f"You have an amount of {amount_in_sell_orders} {self.pair[3:]} in sell orders")
+            self.grid_orders.append(create_limit_order(client, replaced_order['symbol'], 'SELL', float(replaced_order['origQty']), float(replaced_order['price']) + self.base_interval))

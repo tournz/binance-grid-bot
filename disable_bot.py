@@ -25,10 +25,10 @@ with open(BOT_FILE_PATH,'rb') as f:
     gridbot = pickle.load(f)
 
 # See what orders are related to the bot and cancel them
-gridbot.detect_grid(client)
+gridbot.detect_binance_grid(client)
 open_orders = client.get_open_orders(symbol=pair)
 for order in open_orders:
-    if (order in gridbot.grid_buy_orders or gridbot.grid_sell_orders):
+    if order in gridbot.binance_grid_orders:
         client.cancel_order(symbol=pair, orderId=order['orderId'])
         print(f"{order['side']} at {order['price']} has been cancelled")
 

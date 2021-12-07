@@ -20,12 +20,12 @@ if active_gridbots != []:
         gridbot = pickle.load(f)
 
     # Show the user the new grid
-    gridbot.detect_grid(client)
+    gridbot.detect_binance_grid(client)
     print('Your order grid is now the following:')
-    for sell in gridbot.sell_prices:
+    for sell in gridbot.binance_sell_prices:
         print(f'SELL AT ----- {sell}')
     print('CURRENT PRICE '+ client.get_symbol_ticker(symbol=gridbot.pair)['price'])
-    for buy in gridbot.buy_prices:
+    for buy in gridbot.binance_buy_prices:
         print(f'BUY AT ------ {buy}')
 
 else:
