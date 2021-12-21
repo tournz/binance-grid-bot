@@ -1,12 +1,12 @@
 # binance-grid-bot
 This program implements a grid strategy trading bot on Binance using API keys.
 
-<strong>About the trading strategy:</strong>
+<h4><strong>About the trading strategy:</strong></h4>
 The grid trading strategy performs well when the trading pair oscillates within a predefined price range.
 The bot is launched with an equal amount of currency on each side of the pair; sell and buy limit orders are placed in an evenly spaced manner, respectively above and below the current pair price, all the way to the interval's higher and lower bounds.
 When a sell order is executed, it is replaced by a buy order 1 rung (i.e. the trading grid's interval) below. Likewise, an executed buy order is replaced by a sell order 1 rung above.
 
-<strong>How to run the app:</strong>
+<h4><strong>How to run the app:</strong></h4>
 
 <strong>Prerequisites:</strong>
 1) the app runs with Python3
