@@ -24,12 +24,12 @@ When a sell order is executed, it is replaced by a buy order 1 rung (i.e. the tr
 <strong>To have the bot rebalance orders every minute</strong>: write the following cron job: * * * * * python3 path_to_repo/binance_bot/adjust_grid.py
 
 <strong>To check on your bot:</strong>
-Option 1: Use the display_grid.py script
+- Option 1 - Use the display_grid.py script:
     - run display_grid.py
     - the script will make you choose among the active bots
     - you will be able to see the current grid
 
-Option 2: Read the log file
+- Option 2 - Read the log file:
     - in the binance_bot repo, access the gridbots folder followed by the right currency pair folder
     - you will be able to see snapshots of the order grid at 1 minute intervals, when the adjust_grid.py script is run automatically by the cron job
 
