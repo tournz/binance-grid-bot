@@ -1,11 +1,10 @@
 import os, pickle, inquirer
 from binance.client import Client
 from crontab import CronTab
+from functions import initialize_client
 
-# Initialize the client
-api_key = os.environ['BINANCE_API']
-api_secret = os.environ['BINANCE_SECRET']
-client = Client(api_key, api_secret)
+# init
+client = initialize_client()
 
 # Ask for the currency pair
 base_currency = input('Base currency: ')

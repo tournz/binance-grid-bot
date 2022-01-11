@@ -1,11 +1,10 @@
 import os, pickle, inquirer, re
 from binance.client import Client
 from grid_bot import Gridbot
+from functions import initialize_client
 
-# Initialize the client
-api_key = os.environ['BINANCE_API']
-api_secret = os.environ['BINANCE_SECRET']
-client = Client(api_key, api_secret)
+# init
+client = initialize_client()
 
 # Retrieve the bot associated with the currency pair
 base_currency = input('Base currency: ')

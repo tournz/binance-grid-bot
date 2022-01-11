@@ -8,9 +8,6 @@ from crontab import CronTab
 from functions import initialize_client
 
 # init
-'''api_key = os.environ['BINANCE_API']
-api_secret = os.environ['BINANCE_SECRET']
-client = Client(api_key, api_secret)'''
 client = initialize_client()
 
 # Choose the currency
