@@ -24,11 +24,12 @@ for pair_dic in ['ETHTRY']:
     pair = pair_dic # to take out once I really loop
     loop_times_pairs[pair] = [datetime.datetime.now()]
     filled_orders_dic[pair] = []
+    print(client.get_all_orders(symbol=pair))
 
 i = 0
 while time.time() < t_end:
     i += 1
-    print(f'Round number {i}')
+    print(f'{i}----------------------------------------------------------------------------------')
     loop_times_all.append(datetime.datetime.now())
     # for pair_dic in exchange_info['symbols']:
     for pair_dic in ['ETHTRY']:
@@ -42,11 +43,11 @@ while time.time() < t_end:
         # Put the newly executed orders in a list
         all_pair_orders = client.get_all_orders(symbol=pair)
         loop_times_pairs[pair].append(datetime.datetime.now())
-        print(f'Collected the {pair} orders at {datetime.datetime.now()}')
+        print(f'Collected the {pair} pair orders at {datetime.datetime.now()}')
         pair_filled_orders_id = [order['orderId'] for order in filled_orders_dic[pair]]
         newly_filled_pair_orders = [order for order in all_pair_orders if order['status']=='FILLED' and order['orderId'] not in pair_filled_orders_id and order['updateTime'] > 1000*t_start]
         newly_filled_pair_orders = sorted(newly_filled_pair_orders, key=lambda d: d['updateTime'])
-        print(f'{len(newly_filled_pair_orders)} new orders were filled')
+        print(f'{len(newly_filled_pair_orders)} new orders were filled for the {pair} pair')
         filled_orders_dic[pair].extend(newly_filled_pair_orders)
 
         # Loop over the active gridbots
