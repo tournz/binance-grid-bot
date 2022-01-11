@@ -54,9 +54,9 @@ class Gridbot:
         print('Your bot has been launched')
 
     def detect_binance_grid(self, client):
-        self.binance_grid_orders = client.get_open_orders(symbol=self.pair)
+        binance_pair_orders = client.get_open_orders(symbol=self.pair)
         gridbot_orders_ids = [order['orderId'] for order in self.grid_orders]
-        self.binance_grid_orders = [order for order in self.binance_grid_orders if order['orderId'] in gridbot_orders_ids]
+        self.binance_grid_orders = [order for order in binance_pair_orders if order['orderId'] in gridbot_orders_ids]
         self.binance_grid_sell_orders = [order for order in self.binance_grid_orders if order['side'] == 'SELL']
         self.binance_grid_buy_orders = [order for order in self.binance_grid_orders if order['side'] == 'BUY']
         self.binance_buy_prices = sorted([float(buy_order['price']) for buy_order in self.binance_grid_buy_orders], reverse=True)

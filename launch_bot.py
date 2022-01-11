@@ -5,11 +5,13 @@ from buy_sell_order import create_limit_order
 from get_latest_data import get_all_trade_data
 from grid_bot import Gridbot
 from crontab import CronTab
+from functions import initialize_client
 
 # init
-api_key = os.environ['BINANCE_API']
+'''api_key = os.environ['BINANCE_API']
 api_secret = os.environ['BINANCE_SECRET']
-client = Client(api_key, api_secret)
+client = Client(api_key, api_secret)'''
+client = initialize_client()
 
 # Choose the currency
 base_currency = input('Choose your base currency: ')
