@@ -25,9 +25,11 @@ for pair_dic in ['ETHTRY']:
     loop_times_pairs[pair] = [datetime.datetime.now()]
     filled_orders_dic[pair] = []
 
+i = 0
 while time.time() < t_end:
-    loop_times_all.append(time.time())
-    print(f'Was added to the loop_times_all list: {loop_times_all}')
+    i += 1
+    print(f'Round number {i}')
+    loop_times_all.append(datetime.datetime.now())
     # for pair_dic in exchange_info['symbols']:
     for pair_dic in ['ETHTRY']:
         # pair = pair_dic['symbol']
@@ -39,14 +41,13 @@ while time.time() < t_end:
 
         # Put the newly executed orders in a list
         all_pair_orders = client.get_all_orders(symbol=pair)
-        loop_times_pairs[pair].append(time.time())
-        if filled_orders_dic[pair] != []:
-            pair_filled_orders_id = [order['orderId'] for order in filled_orders_dic[pair]]
-        else:
-            pair_filled_orders_id = []
+        loop_times_pairs[pair].append(datetime.datetime.now())
+        print(f'Collected the {pair} orders at {datetime.datetime.now()}')
+        pair_filled_orders_id = [order['orderId'] for order in filled_orders_dic[pair]]
         newly_filled_pair_orders = [order for order in all_pair_orders if order['status']=='FILLED' and order['orderId'] not in pair_filled_orders_id and order['updateTime'] > 1000*t_start]
         newly_filled_pair_orders = sorted(newly_filled_pair_orders, key=lambda d: d['updateTime'])
-        filled_orders_dic[pair].append(newly_filled_pair_orders)
+        print(f'{len(newly_filled_pair_orders)} new orders were filled')
+        filled_orders_dic[pair].extend(newly_filled_pair_orders)
 
         # Loop over the active gridbots
         for gridbot_file in active_gridbots_files:
@@ -60,21 +61,25 @@ while time.time() < t_end:
                 gridbot.replace_order(client, order)
 
             # Log the operations into the log file
-            logfile = open(FOLDER_PATH + '/' + gridbot_file[:-11] + 'logs.txt', 'a')
-            logfile.write('--------------------------------------\nAccessed on ' + str(datetime.datetime.now()) +'\n')
-            logfile.write(f'{len(gridbot_executed_orders)} orders were filled:\n')
-            for order in gridbot_executed_orders:
-                logfile.write(f"{order['side']} at {order['price']} was executed at {datetime.datetime.fromtimestamp(int(order['updateTime']/1000))}\n")
-            logfile.write('\nThe order grid is now as follows:\n')
+            if gridbot_executed_orders != []:
+                print('Writing in the log file')
+                logfile = open(FOLDER_PATH + '/' + gridbot_file[:-11] + 'logs.txt', 'a')
+                logfile.write('--------------------------------------\nAccessed on ' + str(datetime.datetime.now()) +'\n')
+                logfile.write(f'{len(gridbot_executed_orders)} orders were filled:\n')
+                for order in gridbot_executed_orders:
+                    logfile.write(f"{order['side']} at {order['price']} was executed at {datetime.datetime.fromtimestamp(int(order['updateTime']/1000))}\n")
 
             # Update with the latest Binance grid data
             gridbot.detect_binance_grid(client)
             current_price = client.get_symbol_ticker(symbol=gridbot.pair)['price']
 
             # Finish writing in the log file with the current order grid
-            for sell in gridbot.binance_sell_prices:
-                logfile.write(f'SELL AT ----- {sell}\n')
-            logfile.write('CURRENT PRICE '+ current_price +'\n')
-            for buy in gridbot.binance_buy_prices:
-                logfile.write(f'BUY AT ------ {buy}\n')
-            logfile.close()
+            if gridbot_executed_orders != []:
+                logfile.write('\nThe order grid is now as follows:\n')
+                for sell in gridbot.binance_sell_prices:
+                    logfile.write(f'SELL AT ----- {sell}\n')
+                logfile.write('CURRENT PRICE '+ current_price +'\n')
+                for buy in gridbot.binance_buy_prices:
+                    logfile.write(f'BUY AT ------ {buy}\n')
+                logfile.close()
+                print('Logfile editing completed')
