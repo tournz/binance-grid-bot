@@ -24,7 +24,6 @@ for pair_dic in ['ETHTRY']:
     pair = pair_dic # to take out once I really loop
     loop_times_pairs[pair] = [datetime.datetime.now()]
     filled_orders_dic[pair] = []
-    print(client.get_all_orders(symbol=pair))
 
 i = 0
 while time.time() < t_end:
@@ -63,7 +62,6 @@ while time.time() < t_end:
 
             # Log the operations into the log file
             if gridbot_executed_orders != []:
-                print('Writing in the log file')
                 logfile = open(FOLDER_PATH + '/' + gridbot_file[:-11] + 'logs.txt', 'a')
                 logfile.write('--------------------------------------\nAccessed on ' + str(datetime.datetime.now()) +'\n')
                 logfile.write(f'{len(gridbot_executed_orders)} orders were filled:\n')
@@ -83,4 +81,3 @@ while time.time() < t_end:
                 for buy in gridbot.binance_buy_prices:
                     logfile.write(f'BUY AT ------ {buy}\n')
                 logfile.close()
-                print('Logfile editing completed')

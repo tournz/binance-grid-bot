@@ -66,7 +66,7 @@ class Gridbot:
         self.grid_orders = [order for order in self.grid_orders if order != replaced_order]
         if replaced_order['side'] == 'SELL':
             self.grid_orders.append(create_limit_order(client, replaced_order['symbol'], 'BUY', float(replaced_order['origQty']), float(replaced_order['price']) - self.base_interval))
-            print(f"SELL at {replaced_order['price']} has been replaced by BUY at {float(replaced_order['price'] - self.base_interval)}")
+            print(f"SELL at {replaced_order['price']} has been replaced by BUY at {float(replaced_order['price']) - self.base_interval}")
         elif replaced_order['side'] == 'BUY':
             self.grid_orders.append(create_limit_order(client, replaced_order['symbol'], 'SELL', float(replaced_order['origQty']), float(replaced_order['price']) + self.base_interval))
-            print(f"BUY at {replaced_order['price']} has been replaced by SELL at {float(replaced_order['price'] + self.base_interval)}")
+            print(f"BUY at {replaced_order['price']} has been replaced by SELL at {float(replaced_order['price']) + self.base_interval}")
