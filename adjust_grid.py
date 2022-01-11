@@ -40,7 +40,10 @@ while time.time() < t_end:
         # Put the newly executed orders in a list
         all_pair_orders = client.get_all_orders(symbol=pair)
         loop_times_pairs[pair].append(time.time())
-        pair_filled_orders_id = [order['orderId'] for order in filled_orders_dic[pair]]
+        if filled_orders_dic[pair] != []:
+            pair_filled_orders_id = [order['orderId'] for order in filled_orders_dic[pair]]
+        else:
+            pair_filled_orders_id = []
         newly_filled_pair_orders = [order for order in all_pair_orders if order['status']=='FILLED' and order['orderId'] not in pair_filled_orders_id and order['updateTime'] > 1000*t_start]
         newly_filled_pair_orders = sorted(newly_filled_pair_orders, key=lambda d: d['updateTime'])
         filled_orders_dic[pair].append(newly_filled_pair_orders)
