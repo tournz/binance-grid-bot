@@ -17,23 +17,27 @@ When a sell order is executed, it is replaced by a buy order 1 rung (i.e. the tr
     - inquirer, to be able to select the bot you want to interact with from the CLI
 4) i recommend running the app from a remote server, so that the cron job can run when your own computer is not turned on
 
-<strong>To launch the bot</strong>:
-- run python3 launch_bot.py
+<strong>To run the app</strong>:
+- run python3 app.py
+- select option number 1 by pressing 1
 - choose each currency of the pair; you need to have a non-nul balance in at least 1 of the 2 currencies
+- choose the amount of quote currency you want to invest on each side
 
 <strong>To have the bot rebalance orders every minute</strong>: write the following cron job: * * * * * python3 path_to_repo/binance_bot/adjust_grid.py
 
 <strong>To check on your bot:</strong>
 - Option 1 - Use the display_grid.py script:
-    - run display_grid.py
-    - the script will make you choose among the active bots
+    - run python3 app.py
+    - select option number 2 by pressing 2
+    - the script will make you choose among the active bots for the selected pair
     - you will be able to see the current grid
 
 - Option 2 - Read the log file:
     - in the binance_bot repo, access the gridbots folder followed by the right currency pair folder
-    - you will be able to see snapshots of the order grid at 1 minute intervals, when the adjust_grid.py script is run automatically by the cron job
+    - you will be able to see snapshots of the order grid over time
 
 <strong>To disable your bot:</strong>
-- run disable_bot.py
+- run python3 app.py
+- select option number 3 by pressing 3
 - all standing orders associated with your bot will be cancelled
 - your bot file and log file will be marked as disabled
