@@ -2,7 +2,8 @@ from buy_sell_order import create_limit_order
 import math
 
 class Gridbot:
-    def __init__(self, client, pair, amount_quote_currency, range_start, range_end, grid_number):
+    def __init__(self, client, base_currency, quote_currency, amount_quote_currency, range_start, range_end, grid_number):
+        pair = base_currency + quote_currency
         pair_price = client.get_symbol_ticker(symbol=pair)['price']
         if float(pair_price) < float(range_start) or float(range_end) < float(pair_price) or float(range_start) > float(range_end):
             return print('Check your range values')

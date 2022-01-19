@@ -57,7 +57,7 @@ upper_boundary = input('Upper end of the range: ')
 grid_number = input('Number of lines in the grid: ')
 
 # Create the bot object
-gridbot = Gridbot(client, pair, total_amount_quote_currency, lower_boundary, upper_boundary, grid_number)
+gridbot = Gridbot(client, base_currency, quote_currency, total_amount_quote_currency, lower_boundary, upper_boundary, grid_number)
 if hasattr(gridbot, 'sufficient_balance'):
     gridbot.create_order_grid(client)
     # Store the gridbot object
